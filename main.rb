@@ -96,12 +96,16 @@ end
 ### Admin
 
 get '/auth' do
-	erb :auth
+	erb :auth, :locals => { :error => false }
 end
 
 post '/auth' do
-	response.set_cookie(Blog.admin_cookie_key, Blog.admin_cookie_value) if Digest::SHA1.hexdigest(params[:password]) == Blog.admin_password
-	redirect '/'
+	if Digest::SHA1.hexdigest(params[:password]) == Blog.admin_password
+		response.set_cookie(Blog.admin_cookie_key, Blog.admin_cookie_value)
+		redirect '/'
+	else
+		erb :auth, :locals => { :error => true }
+	end
 end
 
 get '/logout' do
