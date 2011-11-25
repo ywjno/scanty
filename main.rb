@@ -59,15 +59,11 @@ get '/' do
 	erb :index, :locals => { :posts => posts }
 end
 
-get '/:year/:month/:day/:slug/' do
+get %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-z0-9\-]+)/?$} do
 	post = Post.filter(:slug => params[:slug]).first
 	halt [ 404, "Page not found" ] unless post
 	@title = post.title
 	erb :post, :locals => { :post => post }
-end
-
-get '/:year/:month/:day/:slug' do
-	redirect "/#{params[:year]}/#{params[:month]}/#{params[:day]}/#{params[:slug]}/", 301
 end
 
 get '/past' do
@@ -125,14 +121,14 @@ post '/posts' do
 	redirect post.url
 end
 
-get '/:year/:month/:day/:slug/edit' do
+get %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-z0-9\-]+)/edit/?$} do
 	auth
 	post = Post.filter(:slug => params[:slug]).first
 	halt [ 404, "Page not found" ] unless post
 	erb :edit, :locals => { :post => post, :url => post.url }
 end
 
-post '/:year/:month/:day/:slug/' do
+post %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-z0-9\-]+)/$} do
 	auth
 	post = Post.filter(:slug => params[:slug]).first
 	halt [ 404, "Page not found" ] unless post
