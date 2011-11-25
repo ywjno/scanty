@@ -1,11 +1,33 @@
 <form action="<%= url %>" method="post" name="edit">
-<div class="postzoom">
-	<h2 class="title"><input type="text" name="title" value="<%= post.title %>" /></h2>
-	<p class="meta"><input type="text" name="tags" value="<%= post.tags %>" /></p>
-	<p class="meta"><%= post.created_at %></p>
-	<div class="entry">
-		<textarea name="content"><%= post.content %></textarea>
-	</div>
-	<div class="edit"><input type="submit" value="Save" /></div>
-</div>
+  <fieldset>
+    <div class="clearfix">
+      <label for="title"><strong>Title</strong></label>
+      <div class="input">
+        <input type="text" id="title" name="title" value="<%= post.title %>" placeholder="title" class="span5" />
+      </div>
+    </div>
+    <div class="clearfix">
+      <label for="tags"><strong>Tags</strong></label>
+      <div class="input">
+        <input type="text" id="tags" name="tags" value="<%= post.tags %>" placeholder="Tags" class="span3" />
+      </div>
+    </div>
+    <div class="clearfix">
+      <label for="content"><strong>Content</strong></label>
+      <div class="input">
+        <textarea class="xxlarge" id="content" name="content" rows="18" placeholder="Content"><%= post.content %></textarea>
+        <% if post.created_at %>
+          <span class="help-block">Created at:&nbsp;<%= post.created_at %></span>
+        <% end %>
+      </div>
+    </div>
+    <div class="actions">
+      <input type="submit" class="btn primary" value="Save">&nbsp;
+      <% if post.created_at %>
+        <a href="<%= post.url %>" class="btn">Back</a>
+      <% else %>
+        <button type="reset" class="btn">Reset</button>
+      <% end %>
+    </div>
+  </fieldset>
 </form>

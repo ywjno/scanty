@@ -20,6 +20,7 @@ configure do
 	require 'ostruct'
 	Blog = OpenStruct.new(
 		:title => 'a scanty blog',
+		:subtitle => 'Scanty, a really small blog',
 		:author => 'John Doe',
 		:url_base => 'http://localhost:4567/',
 		:admin_password => Digest::SHA1.hexdigest('changeme'),
@@ -55,7 +56,7 @@ layout 'layout'
 
 get '/' do
 	posts = Post.reverse_order(:created_at).limit(10)
-	erb :index, :locals => { :posts => posts }, :layout => false
+	erb :index, :locals => { :posts => posts }
 end
 
 get '/past/:year/:month/:day/:slug/' do

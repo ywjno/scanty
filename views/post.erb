@@ -1,13 +1,18 @@
-<div class="postzoom">
-	<h2 class="title"><%= post.title %></h2>
-	<p class="meta"><small><%= post.linked_tags %></small></p>
-	<p class="meta"><%= post.created_at %></p>
-	<div class="entry">
-		<%= post.content_html %>
-	</div>
-	<% if admin? %>
-		<div class="edit"><a href="<%= post.url %>edit">edit</a></div>
-	<% end %>
+<div class="post">
+  <div class="post-header">
+    <h2 class="post-title">
+      <a href="<%= post.url %>"><%= post[:title] %></a>
+    </h2>
+    <p class="post-meta">
+      <%= post.created_at.strftime("%Y-%m-%d %H:%M:%S") %>&nbsp;|&nbsp;<small>Posted in</small> <%= post.linked_tags %>
+    </p>
+  </div>
+  <div class="post-content">
+    <%= post.content_html %>
+  </div>
+  <% if admin? %>
+    <div class="edit"><a href="<%= post.url %>edit">edit</a></div>
+  <% end %>
 </div>
 
 <% if Blog.disqus_shortname %>

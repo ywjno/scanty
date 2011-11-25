@@ -1,25 +1,69 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<title><%= @title || Blog.title %></title>
-	<link href="/main.css" rel="stylesheet" type="text/css" />
-</head>
-<body>
-<div id="header">
-	<div id="logo2">
-		<h1><a href="/"><%= Blog.title %></a></h1>
-		<p>by <%= Blog.author %></p>
-	</div>
-</div>
-
-<div id="content">
-	<%= yield %>
-</div>
-
-<div id="footer">
-	<p id="legal">
-	Content by <%= Blog.author %> | 
-	Design adapted from <a href="http://www.freecsstemplates.org/preview/replenish">Replenish</a>
-</div>
-</body>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title><%= Blog.title %></title>
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/customize.css" rel="stylesheet" type="text/css" />
+    <link href="/feed" rel="alternate" title="Primary Feed" type="application/atom+xml" />
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <ul class="nav">
+            <li class="active"><a href="/">Blog</a></li>
+          </ul>
+          <% if admin? %>
+            <p class="pull-right">
+              <a href="/posts/new">New post</a>
+            </p>
+          <% else %>
+            <p class="pull-right"><a href="/auth">Log in</a></p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="content">
+        <div class="page-header">
+          <h1><%= Blog.title %><p><%= Blog.subtitle %></p></h1>
+        </div>
+        <div class="row">
+          <div class="span10">
+            <%= yield %>
+            <% if Blog.disqus_shortname %>
+              <script type="text/javascript">
+                //<[CDATA[
+                (function() {
+                  var links = document.getElementsByTagName('a');
+                  var query = '?';
+                  for(var i = 0; i < links.length; i++) {
+                    if(links[i].href.indexOf('#disqus_thread') >= 0) {
+                      query += 'url' + i + '=' + encodeURIComponent(links[i].href) + '&';
+                    }
+                  }
+                  document.write('<script type="text/javascript" src="http://disqus.com/forums/<%= Blog.disqus_shortname %>/get_num_replies.js' + query + '"></' + 'script>');
+                })();
+                //]]>
+              </script>
+            <% end %>
+          </div>
+          <div class="span4">
+            <div class="well">
+              <a href="/past">Archive</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer>
+        <p>Content by <%= Blog.author %>&nbsp;|&nbsp;Design adapted from <a href="http://twitter.github.com/bootstrap/">Bootstrap</a></p>
+      </footer>
+    </div>
+  </body>
 </html>
