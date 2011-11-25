@@ -185,15 +185,27 @@ module MaRuKu; module In; module Markdown; module SpanLevelParser
 					maruku_recover "Threating as literal", src, con
 					con.push_char src.shift_char
 				else
-					follows = src.cur_chars(4)
-					if  follows =~ /^\_\_\_[^\s\_]/
-						con.push_element read_emstrong(src,'___')
-					elsif follows  =~ /^\_\_[^\s\_]/
-						con.push_element read_strong(src,'__')
-					elsif follows =~ /^\_[^\s\_]/
-						con.push_element read_em(src,'_')
-					else # _ is just a normal char
-						con.push_char src.shift_char
+					# we don't want "mod_ruby" to start an emphasis
+					# so we start one only if
+					# 1) there's nothing else in the span (first char)
+					# or 2) the last char was a space
+					# or 3) the current string is empty
+					#if con.elements.empty? ||
+					if	 (con.cur_string =~ /\s\Z/) || (con.cur_string.size == 0)
+						# also, we check the next characters
+						follows = src.cur_chars(4)
+						if  follows =~ /^\_\_\_[^\s\_]/
+							con.push_element read_emstrong(src,'___')
+						elsif follows  =~ /^\_\_[^\s\_]/
+							con.push_element read_strong(src,'__')
+						elsif follows =~ /^\_[^\s\_]/
+							con.push_element read_em(src,'_')
+						else # _ is just a normal char
+							con.push_char src.shift_char
+						end
+					else
+						# _ is just a normal char
+							con.push_char src.shift_char
 					end
 				end
 			when ?{ # extension
@@ -430,7 +442,8 @@ module MaRuKu; module In; module Markdown; module SpanLevelParser
 	SPACE = ?\ # = 32
 	
 #	R_REF_ID = Regexp.compile(/([^\]\s]*)(\s*\])/)
-	R_REF_ID = Regexp.compile(/([^\]\s]*)(\s*\])/)
+#	R_REF_ID = Regexp.compile(/([^\]\s]*)(\s*\])/)
+	R_REF_ID = Regexp.compile(/([^\]]*)\]/)
 	
 	# Reads a bracketed id "[refid]". Consumes also both brackets.
 	def read_ref_id(src, con)
@@ -696,6 +709,7 @@ module MaRuKu; module In; module Markdown; module SpanLevelParser
 				end
 			end
 		end
+		
 		def push_string_if_present
 			if @cur_string.size > 0
 				@elements << @cur_string

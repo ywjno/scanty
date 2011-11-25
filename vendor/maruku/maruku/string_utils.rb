@@ -46,7 +46,7 @@ module MaRuKu; module Strings
 	#
 	def parse_email_headers(s)
 		keys={}
-		match = (s =~ /((\w[\w\s]+: .*\n)+)\n/)
+		match = (s =~ /\A((\w[\w\s\_\-]+: .*\n)+)\s*\n/)
 		if match != 0
 			keys[:data] = s
 		else
@@ -150,7 +150,7 @@ module MaRuKu; module Strings
 	
 	# change space to "_" and remove any non-word character
 	def sanitize_ref_id(x)
-		x.downcase.gsub(' ','_').gsub(/[^\w]/,'')
+		x.strip.downcase.gsub(' ','_').gsub(/[^\w]/,'')
 	end
 
 

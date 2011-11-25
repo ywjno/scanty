@@ -34,6 +34,7 @@ class MDElement
 	
 	# Generate an id for headers. Assumes @children is set.
 	def generate_id
+		
 		title = children_to_s
 		title.gsub!(/ /,'_')
 		title.downcase!
@@ -45,7 +46,9 @@ class MDElement
 			$uid += 1
 			title = "id#{$uid}"
 		end
-		
+
+		# random is a very bad idea
+#		title << "_" + rand(10000).to_s
 		title
 	end
 end

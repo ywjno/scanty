@@ -90,7 +90,7 @@ module MaRuKu; module Out; module HTML
 		img = Element.new 'img'
 		img.attributes['src'] = src
 		img.attributes['style'] = style
-		img.attributes['alt'] = "equation"
+		img.attributes['alt'] = "$#{self.math.strip}$"
 		img
 	end
 	
@@ -103,7 +103,7 @@ module MaRuKu; module Out; module HTML
 			
 			if mathml
 				add_class_to(mathml, 'maruku-mathml')
-				span << mathml 
+				return mathml
 			end
 	
 			if png
@@ -121,15 +121,6 @@ module MaRuKu; module Out; module HTML
 		
 		div = create_html_element 'div'
 		add_class_to(div, 'maruku-equation')
-			if self.label  # then numerate
-				span = Element.new 'span'
-				span.attributes['class'] = 'maruku-eq-number'
-				num = self.num
-				span << Text.new("(#{num})")
-				div << span
-				div.attributes['id'] = "eq:#{self.label}"
-			end
-			
 			if mathml
 				add_class_to(mathml, 'maruku-mathml')
 				div << mathml 
@@ -141,12 +132,21 @@ module MaRuKu; module Out; module HTML
 				div << img
 			end
 			
-			source_div = Element.new 'div'
-				add_class_to(source_div, 'maruku-eq-tex')
-				code = convert_to_mathml_none(:equation, self.math)	
-				code.attributes['style'] = 'display: none'
-			source_div << code
-			div << source_div
+			source_span = Element.new 'span'
+			add_class_to(source_span, 'maruku-eq-tex')
+			code = convert_to_mathml_none(:equation, self.math.strip)	
+			code.attributes['style'] = 'display: none'
+			source_span << code
+			div << source_span
+
+			if self.label  # then numerate
+				span = Element.new 'span'
+				span.attributes['class'] = 'maruku-eq-number'
+				num = self.num
+				span << Text.new("(#{num})")
+				div << span
+				div.attributes['id'] = "eq:#{self.label}"
+			end
 		div
 	end
 	
@@ -164,6 +164,23 @@ module MaRuKu; module Out; module HTML
 		end
 	end
 
+	def to_html_divref
+		ref= nil
+		self.doc.refid2ref.each_value { |h|
+			ref = h[self.refid] if h.has_key?(self.refid)			
+		}
+		if ref
+			num = ref.num
+                        a = Element.new 'a'
+                        a.attributes['class'] = 'maruku-ref'
+                        a.attributes['href'] = "#" + self.refid
+                        a << Text.new(num.to_s)
+                        a
+                else
+                        maruku_error "Cannot find div #{self.refid.inspect}"
+                        Text.new "\\ref{#{self.refid}}"
+                end
+	end
 	
 end end end
 
