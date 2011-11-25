@@ -72,3 +72,7 @@ body {
 .deleted-msg {
     color: #B94A48;
 }
+
+.paginate .pull-right {
+    margin-left: 120px;
+}

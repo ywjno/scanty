@@ -60,7 +60,7 @@ helpers do
 			html += "<p class=\"pull-left\"><a href=\"#{url}/page/#{post.prev_page}\">&larr;&nbsp;Previous</a></p>"
 		end
 		if post.next_page
-			html += "<p class=\"pull-right\" style=\"margin-left: 120px;\"><a href=\"#{url}/page/#{post.next_page}\">Next&nbsp;&rarr;</a></p>"
+			html += "<p class=\"pull-right\"><a href=\"#{url}/page/#{post.next_page}\">Next&nbsp;&rarr;</a></p>"
 		end
 		html
 	end
