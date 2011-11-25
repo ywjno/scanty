@@ -66,7 +66,7 @@ get %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-z0-9\-]+)/?$} do
 	erb :post, :locals => { :post => post }
 end
 
-get '/past' do
+get '/archive' do
 	posts = Post.reverse_order(:created_at)
 	@title = "Archive"
 	erb :archive, :locals => { :posts => posts }
