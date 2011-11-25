@@ -4,6 +4,8 @@ $LOAD_PATH.unshift File.dirname(__FILE__) + '/../vendor/syntax'
 require 'syntax/convertors/html'
 
 class Post < Sequel::Model
+	Sequel.extension :pagination
+
 	def url
 		d = created_at
 		"/#{d.year}/#{d.month}/#{d.day}/#{slug}/"

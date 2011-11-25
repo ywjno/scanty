@@ -10,7 +10,6 @@
     <![endif]-->
     <link href="/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="/customize.css" rel="stylesheet" type="text/css" />
-    <link href="/feed" rel="alternate" title="Primary Feed" type="application/atom+xml" />
   </head>
   <body>
     <div class="topbar">
@@ -20,9 +19,7 @@
             <li class="active"><a href="/">Blog</a></li>
           </ul>
           <% if admin? %>
-            <p class="pull-right">
-              <a href="/posts/new">New post</a>&nbsp;|&nbsp;<a href="/logout">Log out</a>
-            </p>
+            <p class="pull-right"><a href="/logout">Log out</a></p>
           <% else %>
             <p class="pull-right"><a href="/auth">Log in</a></p>
           <% end %>
@@ -31,35 +28,7 @@
     </div>
     <div class="container">
       <div class="content">
-        <div class="page-header">
-          <h1><%= Blog.title %><p><%= Blog.subtitle %></p></h1>
-        </div>
-        <div class="row">
-          <div class="span10">
-            <%= yield %>
-            <% if Blog.disqus_shortname %>
-              <script type="text/javascript">
-                //<[CDATA[
-                (function() {
-                  var links = document.getElementsByTagName('a');
-                  var query = '?';
-                  for(var i = 0; i < links.length; i++) {
-                    if(links[i].href.indexOf('#disqus_thread') >= 0) {
-                      query += 'url' + i + '=' + encodeURIComponent(links[i].href) + '&';
-                    }
-                  }
-                  document.write('<script type="text/javascript" src="http://disqus.com/forums/<%= Blog.disqus_shortname %>/get_num_replies.js' + query + '"></' + 'script>');
-                })();
-                //]]>
-              </script>
-            <% end %>
-          </div>
-          <div class="span4">
-            <div class="well">
-              <a href="/past">Archive</a>
-            </div>
-          </div>
-        </div>
+        <%= yield %>
       </div>
       <footer>
         <p>Content by <%= Blog.author %>&nbsp;|&nbsp;Design adapted from <a href="http://twitter.github.com/bootstrap/">Bootstrap</a></p>

@@ -26,7 +26,8 @@ configure do
 		:admin_password => Digest::SHA1.hexdigest('changeme'),
 		:admin_cookie_key => 'scanty_admin',
 		:admin_cookie_value => Digest::SHA1.hexdigest('51d6d976913ace58'),
-		:disqus_shortname => nil
+		:disqus_shortname => nil,
+		:page_size => 10
 	)
 end
 
@@ -48,35 +49,56 @@ helpers do
 	def auth
 		halt [ 401, 'Not authorized' ] unless admin?
 	end
-end
 
-layout 'layout'
+	def paginate(post, options={})
+		html = ""
+		url = ""
+		url = "/tags/#{options[:tag]}" if options[:tag]
+		if post.prev_page
+			html += "<p class=\"pull-left\"><a href=\"#{url}/page/#{post.prev_page}\">&larr;&nbsp;Previous</a></p>"
+		end
+		if post.next_page
+			html += "<p class=\"pull-right\" style=\"margin-left: 120px;\"><a href=\"#{url}/page/#{post.next_page}\">Next&nbsp;&rarr;</a></p>"
+		end
+		html
+	end
+end
 
 ### Public
 
 get '/' do
-	posts = Post.reverse_order(:created_at).limit(10)
-	erb :index, :locals => { :posts => posts }
+	posts = Post.reverse_order(:created_at).paginate(1, Blog.page_size)
+	erb :index, :locals => { :posts => posts }, :layout => :sidebar_layout
 end
 
 get %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-z0-9\-]+)/?$} do
 	post = Post.filter(:slug => params[:slug]).first
 	halt [ 404, "Page not found" ] unless post
-	@title = post.title
-	erb :post, :locals => { :post => post }
+	erb :post, :locals => { :post => post }, :layout => :layout
 end
 
 get '/archive' do
 	posts = Post.reverse_order(:created_at)
-	@title = "Archive"
-	erb :archive, :locals => { :posts => posts }
+	erb :archive, :locals => { :posts => posts }, :layout => :layout
 end
 
 get '/tags/:tag' do
 	tag = params[:tag]
-	posts = Post.filter(:tags.like("%#{tag}%")).reverse_order(:created_at).limit(30)
-	@title = "Posts tagged #{tag}"
-	erb :tagged, :locals => { :posts => posts, :tag => tag }
+	posts = Post.filter(:tags.like("%#{tag}%")).reverse_order(:created_at).paginate(1, Blog.page_size)
+	erb :tagged, :locals => { :posts => posts, :tag => tag }, :layout => false
+end
+
+get '/page/:page' do
+	posts = Post.reverse_order(:created_at).paginate(params[:page].to_i, Blog.page_size)
+	redirect '/' if posts.page_count < params[:page].to_i
+	erb :index, :locals => { :posts => posts }, :layout => :sidebar_layout
+end
+
+get '/tags/:tag/page/:page' do
+	tag = params[:tag]
+	posts = Post.filter(:tags.like("%#{tag}%")).reverse_order(:created_at).paginate(params[:page].to_i, Blog.page_size)
+	redirect '/' if posts.page_count < params[:page].to_i
+	erb :tagged, :locals => { :posts => posts, :tag => tag }, :layout => false
 end
 
 get '/feed' do
