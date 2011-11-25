@@ -71,8 +71,9 @@ get '/' do
 	erb :index, :locals => { :posts => posts }, :layout => :sidebar_layout
 end
 
-get %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-z0-9\-]+)/?$} do
-	post = Post.filter(:slug => params[:slug]).first
+get %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-zA-Z0-9%\-]+)/?$} do
+	puts params[:slug]
+	post = Post.filter(:slug => URI.escape(params[:slug])).first
 	halt [ 404, "Page not found" ] unless post
 	erb :post, :locals => { :post => post }, :layout => :layout
 end
@@ -143,16 +144,16 @@ post '/posts' do
 	redirect post.url
 end
 
-get %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-z0-9\-]+)/edit/?$} do
+get %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-zA-Z0-9%\-]+)/edit/?$} do
 	auth
-	post = Post.filter(:slug => params[:slug]).first
+	post = Post.filter(:slug => URI.escape(params[:slug])).first
 	halt [ 404, "Page not found" ] unless post
 	erb :edit, :locals => { :post => post, :url => post.url }
 end
 
-post %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-z0-9\-]+)/$} do
+post %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-zA-Z0-9%\-]+)/$} do
 	auth
-	post = Post.filter(:slug => params[:slug]).first
+	post = Post.filter(:slug => URI.escape(params[:slug])).first
 	halt [ 404, "Page not found" ] unless post
 	post.title = params[:title]
 	post.tags = params[:tags]

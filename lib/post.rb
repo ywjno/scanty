@@ -40,7 +40,13 @@ class Post < Sequel::Model
 	end
 
 	def self.make_slug(title)
-		title.downcase.gsub(/[ _]/, '-').gsub(/[^a-z0-9\-]/, '').squeeze('-')
+		slug = URI.escape(title.downcase.gsub(/[ _]/, '-')).gsub(/[^a-zA-Z0-9%\-]/, '').squeeze('-')
+		unless Post.filter(:slug => slug).first
+			slug
+		else
+			count = Post.filter(:slug.like("#{slug}-%")).count + 1
+			"#{slug}-#{(count + 1)}"
+		end
 	end
 
 	########
