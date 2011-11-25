@@ -59,15 +59,15 @@ get '/' do
 	erb :index, :locals => { :posts => posts }
 end
 
-get '/past/:year/:month/:day/:slug/' do
+get '/:year/:month/:day/:slug/' do
 	post = Post.filter(:slug => params[:slug]).first
 	halt [ 404, "Page not found" ] unless post
 	@title = post.title
 	erb :post, :locals => { :post => post }
 end
 
-get '/past/:year/:month/:day/:slug' do
-	redirect "/past/#{params[:year]}/#{params[:month]}/#{params[:day]}/#{params[:slug]}/", 301
+get '/:year/:month/:day/:slug' do
+	redirect "/#{params[:year]}/#{params[:month]}/#{params[:day]}/#{params[:slug]}/", 301
 end
 
 get '/past' do
@@ -76,7 +76,7 @@ get '/past' do
 	erb :archive, :locals => { :posts => posts }
 end
 
-get '/past/tags/:tag' do
+get '/tags/:tag' do
 	tag = params[:tag]
 	posts = Post.filter(:tags.like("%#{tag}%")).reverse_order(:created_at).limit(30)
 	@title = "Posts tagged #{tag}"
@@ -125,14 +125,14 @@ post '/posts' do
 	redirect post.url
 end
 
-get '/past/:year/:month/:day/:slug/edit' do
+get '/:year/:month/:day/:slug/edit' do
 	auth
 	post = Post.filter(:slug => params[:slug]).first
 	halt [ 404, "Page not found" ] unless post
 	erb :edit, :locals => { :post => post, :url => post.url }
 end
 
-post '/past/:year/:month/:day/:slug/' do
+post '/:year/:month/:day/:slug/' do
 	auth
 	post = Post.filter(:slug => params[:slug]).first
 	halt [ 404, "Page not found" ] unless post

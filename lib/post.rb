@@ -6,7 +6,7 @@ require 'syntax/convertors/html'
 class Post < Sequel::Model
 	def url
 		d = created_at
-		"/past/#{d.year}/#{d.month}/#{d.day}/#{slug}/"
+		"/#{d.year}/#{d.month}/#{d.day}/#{slug}/"
 	end
 
 	def full_url
@@ -33,7 +33,7 @@ class Post < Sequel::Model
 
 	def linked_tags
 		tags.split.inject([]) do |accum, tag|
-			accum << "<a href=\"/past/tags/#{tag}\">#{tag}</a>"
+			accum << "<a href=\"/tags/#{tag}\">#{tag}</a>"
 		end.join(" ")
 	end
 
