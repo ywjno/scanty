@@ -28,7 +28,8 @@ configure do
 		:admin_cookie_key => 'scanty_admin',
 		:admin_cookie_value => Digest::SHA1.hexdigest('51d6d976913ace58'),
 		:disqus_shortname => nil,
-		:page_size => 10
+		:page_size => 10,
+		:timezone => '+08:00'
 	)
 end
 
@@ -153,7 +154,7 @@ post '/posts' do
 		post = Post.new :title => params[:title],
 										:tags => params[:tags],
 										:content => params[:content],
-										:created_at => Time.now,
+										:created_at => Time.now.utc.getlocal(Blog.timezone),
 										:slug => Post.make_slug(params[:title])
 		post.save
 	end
