@@ -13,13 +13,13 @@ class Post < Sequel::Model
 		Blog.url_base.gsub(/\/$/, '') + url
 	end
 
-	def body_html
-		to_html(body)
+	def content_html
+		to_html(content)
 	end
 
 	def summary
-		@summary ||= body.match(/(.{200}.*?\n)/m)
-		@summary || body
+		@summary ||= content.match(/(.{200}.*?\n)/m)
+		@summary || content
 	end
 
 	def summary_html
@@ -27,7 +27,7 @@ class Post < Sequel::Model
 	end
 
 	def more?
-		@more ||= body.match(/.{200}.*?\n(.*)/m)
+		@more ||= content.match(/.{200}.*?\n(.*)/m)
 		@more
 	end
 
