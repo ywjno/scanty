@@ -44,7 +44,7 @@ helpers do
 	end
 
 	def auth
-		stop [ 401, 'Not authorized' ] unless admin?
+		halt [ 401, 'Not authorized' ] unless admin?
 	end
 end
 
@@ -59,7 +59,7 @@ end
 
 get '/past/:year/:month/:day/:slug/' do
 	post = Post.filter(:slug => params[:slug]).first
-	stop [ 404, "Page not found" ] unless post
+	halt [ 404, "Page not found" ] unless post
 	@title = post.title
 	erb :post, :locals => { :post => post }
 end
@@ -98,7 +98,7 @@ get '/auth' do
 end
 
 post '/auth' do
-	set_cookie(Blog.admin_cookie_key, Blog.admin_cookie_value) if params[:password] == Blog.admin_password
+	response.set_cookie(Blog.admin_cookie_key, Blog.admin_cookie_value) if params[:password] == Blog.admin_password
 	redirect '/'
 end
 
@@ -117,14 +117,14 @@ end
 get '/past/:year/:month/:day/:slug/edit' do
 	auth
 	post = Post.filter(:slug => params[:slug]).first
-	stop [ 404, "Page not found" ] unless post
+	halt [ 404, "Page not found" ] unless post
 	erb :edit, :locals => { :post => post, :url => post.url }
 end
 
 post '/past/:year/:month/:day/:slug/' do
 	auth
 	post = Post.filter(:slug => params[:slug]).first
-	stop [ 404, "Page not found" ] unless post
+	halt [ 404, "Page not found" ] unless post
 	post.title = params[:title]
 	post.tags = params[:tags]
 	post.body = params[:body]
