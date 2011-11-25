@@ -15,6 +15,7 @@ configure do
 		text :slug, :null=>false
 		text :tags, :null=>false
 		timestamp :created_at, :null=>false
+		Integer :delete_status, :null=>false, :default=> 1
 	end
 
 	require 'ostruct'
@@ -67,7 +68,7 @@ end
 ### Public
 
 get '/' do
-	posts = Post.reverse_order(:created_at).paginate(1, Blog.page_size)
+	posts = Post.filter(:delete_status => 1).reverse_order(:created_at).paginate(1, Blog.page_size)
 	erb :index, :locals => { :posts => posts }, :layout => :sidebar_layout
 end
 
@@ -85,25 +86,25 @@ end
 
 get '/tags/:tag' do
 	tag = params[:tag]
-	posts = Post.filter(:tags.like("%#{tag}%")).reverse_order(:created_at).paginate(1, Blog.page_size)
+	posts = Post.filter(:delete_status => 1).filter(:tags.like("%#{tag}%")).reverse_order(:created_at).paginate(1, Blog.page_size)
 	erb :tagged, :locals => { :posts => posts, :tag => tag }, :layout => false
 end
 
 get '/page/:page' do
-	posts = Post.reverse_order(:created_at).paginate(params[:page].to_i, Blog.page_size)
+	posts = Post.filter(:delete_status => 1).reverse_order(:created_at).paginate(params[:page].to_i, Blog.page_size)
 	redirect '/' if posts.page_count < params[:page].to_i
 	erb :index, :locals => { :posts => posts }, :layout => :sidebar_layout
 end
 
 get '/tags/:tag/page/:page' do
 	tag = params[:tag]
-	posts = Post.filter(:tags.like("%#{tag}%")).reverse_order(:created_at).paginate(params[:page].to_i, Blog.page_size)
+	posts = Post.filter(:delete_status => 1).filter(:tags.like("%#{tag}%")).reverse_order(:created_at).paginate(params[:page].to_i, Blog.page_size)
 	redirect '/' if posts.page_count < params[:page].to_i
 	erb :tagged, :locals => { :posts => posts, :tag => tag }, :layout => false
 end
 
 get '/feed' do
-	@posts = Post.reverse_order(:created_at).limit(20)
+	@posts = Post.filter(:delete_status => 1).reverse_order(:created_at).limit(20)
 	content_type 'application/atom+xml', :charset => 'utf-8'
 	builder :feed
 end
@@ -139,7 +140,11 @@ end
 
 post '/posts' do
 	auth
-	post = Post.new :title => params[:title], :tags => params[:tags], :content => params[:content], :created_at => Time.now, :slug => Post.make_slug(params[:title])
+	post = Post.new :title => params[:title],
+									:tags => params[:tags],
+									:content => params[:content],
+									:created_at => Time.now,
+									:slug => Post.make_slug(params[:title])
 	post.save
 	redirect post.url
 end
@@ -153,12 +158,19 @@ end
 
 post %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-zA-Z0-9%\-]+)/$} do
 	auth
+	delete_status = params[:delete_status]
 	post = Post.filter(:slug => URI.escape(params[:slug])).first
 	halt [ 404, "Page not found" ] unless post
 	post.title = params[:title]
 	post.tags = params[:tags]
 	post.content = params[:content]
+	if delete_status
+		post.delete_status = 0
+	else
+		post.delete_status = 1
+	end
 	post.save
+	redirect '/' if delete_status
 	redirect post.url
 end
 

@@ -4,6 +4,11 @@
     <tr>
       <td><a href="<%= post.url %>"><%= post.title %></a></td>
       <td><%= post.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+      <% if post.delete? %>
+        <td><span class="deleted-msg">This Blog is deleted.</span></td>
+      <% else %>
+        <td>&nbsp;</td>
+      <% end %>
     </tr>
   <% end %>
 </table>

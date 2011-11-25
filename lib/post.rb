@@ -49,6 +49,10 @@ class Post < Sequel::Model
 		end
 	end
 
+	def delete?
+		delete_status == 0
+	end
+
 	########
 
 	def to_html(markdown)

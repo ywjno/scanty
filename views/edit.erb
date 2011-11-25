@@ -21,6 +21,21 @@
         <% end %>
       </div>
     </div>
+    <% if post.created_at %>
+    <div class="clearfix error">
+      <label for="delete_status"><strong>Delete?</strong></label>
+      <div class="input">
+        <ul class="inputs-list">
+          <li>
+            <label>
+              <input type="checkbox" id="delete_status" name="delete_status" value="true" <% if post.delete? %> checked="checked" <% end %>>
+              <span class="help-inline">If you want to DELETE this blog,just check it.</span>
+            </label>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <% end %>
     <div class="actions">
       <input type="submit" class="btn primary" value="Save">&nbsp;
       <% if post.created_at %>
