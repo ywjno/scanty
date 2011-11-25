@@ -9,11 +9,11 @@ configure do
 
 	DB.create_table? :posts do
 		primary_key :id
-		text :title
-		text :content
-		text :slug
-		text :tags
-		timestamp :created_at
+		text :title, :null=>false
+		text :content, :null=>false
+		text :slug, :null=>false
+		text :tags, :null=>false
+		timestamp :created_at, :null=>false
 	end
 
 	require 'ostruct'
