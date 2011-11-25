@@ -73,14 +73,23 @@ get '/' do
 end
 
 get %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-zA-Z0-9%\-]+)/?$} do
-	puts params[:slug]
-	post = Post.filter(:slug => URI.escape(params[:slug])).first
+	posts = nil
+	if admin?
+		post = Post.filter(:slug => URI.escape(params[:slug])).first
+	else
+		post = Post.filter(:delete_status => 1).filter(:slug => URI.escape(params[:slug])).first
+	end
 	halt [ 404, "Page not found" ] unless post
 	erb :post, :locals => { :post => post }, :layout => :layout
 end
 
 get '/archive' do
-	posts = Post.reverse_order(:created_at)
+	posts = nil
+	if admin?
+		posts = Post.reverse_order(:created_at)
+	else
+		posts = Post.filter(:delete_status => 1).reverse_order(:created_at)
+	end
 	erb :archive, :locals => { :posts => posts }, :layout => :layout
 end
 
