@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'sinatra'
+require 'digest/sha1'
 
 $LOAD_PATH.unshift File.dirname(__FILE__) + '/vendor/sequel'
 require 'sequel'
@@ -21,9 +22,9 @@ configure do
 		:title => 'a scanty blog',
 		:author => 'John Doe',
 		:url_base => 'http://localhost:4567/',
-		:admin_password => 'changeme',
+		:admin_password => Digest::SHA1.hexdigest('changeme'),
 		:admin_cookie_key => 'scanty_admin',
-		:admin_cookie_value => '51d6d976913ace58',
+		:admin_cookie_value => Digest::SHA1.hexdigest('51d6d976913ace58'),
 		:disqus_shortname => nil
 	)
 end
@@ -98,7 +99,7 @@ get '/auth' do
 end
 
 post '/auth' do
-	response.set_cookie(Blog.admin_cookie_key, Blog.admin_cookie_value) if params[:password] == Blog.admin_password
+	response.set_cookie(Blog.admin_cookie_key, Blog.admin_cookie_value) if Digest::SHA1.hexdigest(params[:password]) == Blog.admin_password
 	redirect '/'
 end
 
