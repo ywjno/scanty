@@ -104,6 +104,11 @@ post '/auth' do
 	redirect '/'
 end
 
+get '/logout' do
+	response.delete_cookie(Blog.admin_cookie_key)
+	redirect '/'
+end
+
 get '/posts/new' do
 	auth
 	erb :edit, :locals => { :post => Post.new, :url => '/posts' }
