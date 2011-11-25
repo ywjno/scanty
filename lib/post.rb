@@ -4,18 +4,6 @@ $LOAD_PATH.unshift File.dirname(__FILE__) + '/../vendor/syntax'
 require 'syntax/convertors/html'
 
 class Post < Sequel::Model
-	unless table_exists?
-		set_schema do
-			primary_key :id
-			text :title
-			text :body
-			text :slug
-			text :tags
-			timestamp :created_at
-		end
-		create_table
-	end
-
 	def url
 		d = created_at
 		"/past/#{d.year}/#{d.month}/#{d.day}/#{slug}/"

@@ -1,0 +1,67 @@
+module Sequel
+  module Access
+    module DatabaseMethods
+      # Access uses type :access as the database_type
+      def database_type
+        :access
+      end
+
+      # Doesn't work, due to security restrictions on MSysObjects
+      def tables
+        from(:MSysObjects).filter(:Type=>1, :Flags=>0).select_map(:Name).map{|x| x.to_sym}
+      end
+
+      # Access uses type Counter for an autoincrementing keys
+      def serial_primary_key_options
+        {:primary_key => true, :type=>:Counter}
+      end
+
+      private
+
+      def identifier_input_method_default
+        nil
+      end
+      
+      def identifier_output_method_default
+        nil
+      end
+    end
+  
+    module DatasetMethods
+      SELECT_CLAUSE_METHODS = Dataset.clause_methods(:select, %w'limit distinct columns from join where group order having compounds')
+
+      # Access doesn't support INTERSECT or EXCEPT
+      def supports_intersect_except?
+        false
+      end
+
+      private
+
+      # Access uses # to quote dates
+      def literal_date(d)
+        d.strftime('#%Y-%m-%d#')
+      end
+
+      # Access uses # to quote datetimes
+      def literal_datetime(t)
+        t.strftime('#%Y-%m-%d %H:%M:%S#')
+      end
+      alias literal_time literal_datetime
+
+      # Access uses TOP for limits
+      def select_limit_sql(sql)
+        sql << " TOP #{@opts[:limit]}" if @opts[:limit]
+      end
+
+      # Access uses [] for quoting identifiers
+      def quoted_identifier(v)
+        "[#{v}]"
+      end
+
+      # Access requires the limit clause come before other clauses
+      def select_clause_methods
+        SELECT_CLAUSE_METHODS
+      end
+    end
+  end
+end

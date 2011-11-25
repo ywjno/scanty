@@ -5,7 +5,16 @@ $LOAD_PATH.unshift File.dirname(__FILE__) + '/vendor/sequel'
 require 'sequel'
 
 configure do
-	Sequel.connect(ENV['DATABASE_URL'] || 'sqlite://blog.db')
+	DB = Sequel.connect(ENV['DATABASE_URL'] || 'sqlite://blog.db')
+
+	DB.create_table? :posts do
+		primary_key :id
+		text :title
+		text :body
+		text :slug
+		text :tags
+		timestamp :created_at
+	end
 
 	require 'ostruct'
 	Blog = OpenStruct.new(
