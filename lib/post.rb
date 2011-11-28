@@ -53,6 +53,20 @@ class Post < Sequel::Model
 		delete_status == 0
 	end
 
+	def self.dates(admin)
+		dates = {}
+		posts = nil
+		if admin
+			posts = Post.reverse_order(:created_at)
+		else
+			posts = Post.filter(:delete_status => 1).reverse_order(:created_at)
+		end
+		posts.each do |post|
+			dates[post.created_at.strftime("%Y/%m")] = post.created_at.strftime("%Y-%m")
+		end
+		dates
+	end
+
 	########
 
 	def to_html(markdown)

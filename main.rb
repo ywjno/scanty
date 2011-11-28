@@ -70,7 +70,7 @@ end
 
 get '/' do
 	posts = Post.filter(:delete_status => 1).reverse_order(:created_at).paginate(1, Blog.page_size)
-	erb :index, :locals => { :posts => posts }, :layout => :sidebar_layout
+	erb :index, :locals => { :posts => posts, :dates => Post.dates(admin?) }, :layout => :sidebar_layout
 end
 
 get %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-zA-Z0-9%\-]+)/?$} do
@@ -103,7 +103,7 @@ end
 get '/page/:page' do
 	posts = Post.filter(:delete_status => 1).reverse_order(:created_at).paginate(params[:page].to_i, Blog.page_size)
 	redirect '/' if posts.page_count < params[:page].to_i
-	erb :index, :locals => { :posts => posts }, :layout => :sidebar_layout
+	erb :index, :locals => { :posts => posts, :dates => Post.dates(admin?) }, :layout => :sidebar_layout
 end
 
 get '/tags/:tag/page/:page' do
@@ -119,6 +119,16 @@ end
 		content_type 'application/atom+xml', :charset => 'utf-8'
 		builder :feed
 	end
+end
+
+get %r{^/(?<year>\d{4})/(?<month>\d{2})/?$} do
+	posts = nil
+	if admin?
+		posts = Post.filter(:created_at.like("#{params[:year]}-#{params[:month]}%")).reverse_order(:created_at)
+	else
+		posts = Post.filter(:delete_status => 1).filter(:created_at.like("#{params[:year]}-#{params[:month]}%")).reverse_order(:created_at)
+	end
+	erb :archive, :locals => { :posts => posts }, :layout => :layout
 end
 
 ### Admin

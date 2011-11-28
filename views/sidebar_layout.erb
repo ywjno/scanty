@@ -60,6 +60,11 @@
           <div class="span4">
             <div class="well">
               <a href="/archive">Archive</a>
+              <ul>
+              <% dates.each do |key, value| %>
+                <li><a href="/<%= key %>"><%= value %></a></li>
+              <% end %>
+              </ul>
             </div>
           </div>
         </div>
