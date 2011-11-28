@@ -14,7 +14,7 @@ xml.feed "xmlns" => "http://www.w3.org/2005/Atom" do
 			xml.updated post[:created_at].iso8601
 			xml.author { xml.name Blog.author }
 			xml.summary post.summary_html, "type" => "html"
-			xml.content post.body_html, "type" => "html"
+			xml.content post.content_html, "type" => "html"
 		end
 	end
 end

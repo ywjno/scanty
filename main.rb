@@ -113,14 +113,12 @@ get '/tags/:tag/page/:page' do
 	erb :tagged, :locals => { :posts => posts, :tag => tag }, :layout => false
 end
 
-get '/feed' do
-	@posts = Post.filter(:delete_status => 1).reverse_order(:created_at).limit(20)
-	content_type 'application/atom+xml', :charset => 'utf-8'
-	builder :feed
-end
-
-get '/rss' do
-	redirect '/feed', 301
+["/rss", "/feed"].each do |path|
+	get path do
+		@posts = Post.filter(:delete_status => 1).reverse_order(:created_at).limit(20)
+		content_type 'application/atom+xml', :charset => 'utf-8'
+		builder :feed
+	end
 end
 
 ### Admin
@@ -153,10 +151,10 @@ post '/posts' do
 	post = nil
 	DB.transaction do
 		post = Post.new :title => params[:title],
-										:tags => params[:tags],
-										:content => params[:content],
-										:created_at => Time.now.utc.getlocal(Blog.timezone),
-										:slug => Post.make_slug(params[:title])
+						:tags => params[:tags],
+						:content => params[:content],
+						:created_at => Time.now.utc.getlocal(Blog.timezone),
+						:slug => Post.make_slug(params[:title])
 		post.save
 	end
 	redirect post.url
