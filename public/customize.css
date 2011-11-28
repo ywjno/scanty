@@ -76,3 +76,10 @@ body {
 .paginate .pull-right {
     margin-left: 120px;
 }
+
+.change_slug {
+    margin-top: 18px;
+}
+.change_slug .help-inline {
+    color: #B94A48;
+}

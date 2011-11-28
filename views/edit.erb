@@ -4,6 +4,16 @@
       <label for="title"><strong>Title</strong></label>
       <div class="input">
         <input type="text" id="title" name="title" value="<%= post.title %>" placeholder="title" class="span5" />
+        <% if post.created_at %>
+        <ul class="inputs-list change_slug">
+          <li>
+            <label>
+              <input type="checkbox" id="change_slug" name="change_slug" value="true">
+              <span class="help-inline">If you want to change this blog's url to some to title,just check it.</span>
+            </label>
+          </li>
+        </ul>
+        <% end %>
       </div>
     </div>
     <div class="clearfix">

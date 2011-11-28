@@ -178,9 +178,9 @@ post %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-zA-Z0-9%\-]+)/$} do
 		post.tags = params[:tags]
 		post.content = params[:content]
 		post.delete_status = delete_status
+		post.slug = Post.make_slug(params[:title]) if params[:change_slug]
 		post.save
 	end
-	redirect '/' if delete_status
+	redirect '/' if params[:delete_status]
 	redirect post.url
 end
-
