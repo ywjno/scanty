@@ -150,6 +150,7 @@ end
 
 post '/posts' do
 	auth
+	post = nil
 	DB.transaction do
 		post = Post.new :title => params[:title],
 										:tags => params[:tags],
@@ -170,18 +171,15 @@ end
 
 post %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-zA-Z0-9%\-]+)/$} do
 	auth
-	delete_status = params[:delete_status]
+	delete_status = params[:delete_status] ? 0 : 1
+	post = nil
 	DB.transaction do
 		post = Post.filter(:slug => URI.escape(params[:slug])).first
 		halt [ 404, "Page not found" ] unless post
 		post.title = params[:title]
 		post.tags = params[:tags]
 		post.content = params[:content]
-		if delete_status
-			post.delete_status = 0
-		else
-			post.delete_status = 1
-		end
+		post.delete_status = delete_status
 		post.save
 	end
 	redirect '/' if delete_status
