@@ -317,17 +317,17 @@ module Sequel
         # Run execute_select on the database with the given SQL and the stored
         # bind arguments.
         def execute(sql, opts={}, &block)
-          super(sql, {:arguments=>bind_arguments}.merge(opts), &block)
+          super(prepared_sql, {:arguments=>bind_arguments}.merge(opts), &block)
         end
         
         # Same as execute, explicit due to intricacies of alias and super.
         def execute_dui(sql, opts={}, &block)
-          super(sql, {:arguments=>bind_arguments}.merge(opts), &block)
+          super(prepared_sql, {:arguments=>bind_arguments}.merge(opts), &block)
         end
         
         # Same as execute, explicit due to intricacies of alias and super.
         def execute_insert(sql, opts={}, &block)
-          super(sql, {:arguments=>bind_arguments}.merge(opts), &block)
+          super(prepared_sql, {:arguments=>bind_arguments}.merge(opts), &block)
         end
       end
 
@@ -414,13 +414,13 @@ module Sequel
 
       private
 
-      def literal_other(v)
+      def literal_other_append(sql, v)
         case v
         when OraDate
-          literal(db.to_application_timestamp(v))
+          literal_append(sql, db.to_application_timestamp(v))
         when OCI8::CLOB
           v.rewind
-          literal(v.read)
+          literal_append(sql, v.read)
         else
           super
         end

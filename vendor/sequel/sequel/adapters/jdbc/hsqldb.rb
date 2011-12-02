@@ -83,25 +83,32 @@ module Sequel
         # CTEs in earlier queries might take precedence over CTEs with the same name in later queries.
         # Also, if any CTE is recursive, all CTEs must be recursive.
         # If you want to use CTEs with HSQLDB, you'll have to manually modify the dataset to allow it.
-        SELECT_CLAUSE_METHODS = clause_methods(:select, %w'distinct columns from join where group having compounds order limit lock')
+        SELECT_CLAUSE_METHODS = clause_methods(:select, %w'select distinct columns from join where group having compounds order limit lock')
         SQL_WITH_RECURSIVE = "WITH RECURSIVE ".freeze
+        APOS = Dataset::APOS
+        HSTAR = "H*".freeze
+        BLOB_OPEN = "X'".freeze
+        BITCOMP_OPEN = "((0 - ".freeze
+        BITCOMP_CLOSE = ") - 1)".freeze
+        DEFAULT_FROM = " FROM (VALUES (0))".freeze
+        TIME_FORMAT = "'%H:%M:%S'".freeze
 
         # Handle HSQLDB specific case insensitive LIKE and bitwise operator support.
-        def complex_expression_sql(op, args)
+        def complex_expression_sql_append(sql, op, args)
           case op
-          when :ILIKE
-            super(:LIKE, [SQL::Function.new(:ucase, args.at(0)), SQL::Function.new(:ucase, args.at(1)) ])
-          when :"NOT ILIKE"
-            super(:"NOT LIKE", [SQL::Function.new(:ucase, args.at(0)), SQL::Function.new(:ucase, args.at(1)) ])
+          when :ILIKE, :"NOT ILIKE"
+            super(sql, (op == :ILIKE ? :LIKE : :"NOT LIKE"), [SQL::Function.new(:ucase, args.at(0)), SQL::Function.new(:ucase, args.at(1)) ])
           when :&, :|, :^
             op = BITWISE_METHOD_MAP[op]
-            complex_expression_arg_pairs(args){|a, b| literal(SQL::Function.new(op, a, b))}
+            sql << complex_expression_arg_pairs(args){|a, b| literal(SQL::Function.new(op, a, b))}
           when :<<
-            complex_expression_arg_pairs(args){|a, b| "(#{literal(a)} * POWER(2, #{literal(b)}))"}
+            sql << complex_expression_arg_pairs(args){|a, b| "(#{literal(a)} * POWER(2, #{literal(b)}))"}
           when :>>
-            complex_expression_arg_pairs(args){|a, b| "(#{literal(a)} / POWER(2, #{literal(b)}))"}
+            sql << complex_expression_arg_pairs(args){|a, b| "(#{literal(a)} / POWER(2, #{literal(b)}))"}
           when :'B~'
-            "((0 - #{literal(args.at(0))}) - 1)"
+            sql << BITCOMP_OPEN
+            literal_append(sql, args.at(0))
+            sql << BITCOMP_CLOSE
           else
             super
           end
@@ -120,11 +127,8 @@ module Sequel
         private
 
         # Use string in hex format for blob data.
-        def literal_blob(v)
-          blob = "X'"
-          v.each_byte{|x| blob << sprintf('%02x', x)}
-          blob << "'"
-          blob
+        def literal_blob_append(sql, v)
+          sql << BLOB_OPEN << v.unpack(HSTAR).first << APOS
         end
 
         # HSQLDB uses FALSE for false values.
@@ -134,7 +138,7 @@ module Sequel
 
         # HSQLDB handles fractional seconds in timestamps, but not in times
         def literal_sqltime(v)
-          v.strftime("'%H:%M:%S'")
+          v.strftime(TIME_FORMAT)
         end
 
         # HSQLDB uses TRUE for true values.
@@ -152,7 +156,7 @@ module Sequel
           if @opts[:from]
             super
           else
-            sql << " FROM (VALUES (0))"
+            sql << DEFAULT_FROM
           end
         end
         

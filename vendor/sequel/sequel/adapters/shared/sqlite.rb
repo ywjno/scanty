@@ -396,24 +396,36 @@ module Sequel
     
     # Instance methods for datasets that connect to an SQLite database
     module DatasetMethods
-      SELECT_CLAUSE_METHODS = Dataset.clause_methods(:select, %w'distinct columns from join where group having compounds order limit')
-      COMMA_SEPARATOR = ', '.freeze
+      SELECT_CLAUSE_METHODS = Dataset.clause_methods(:select, %w'select distinct columns from join where group having compounds order limit')
       CONSTANT_MAP = {:CURRENT_DATE=>"date(CURRENT_TIMESTAMP, 'localtime')".freeze, :CURRENT_TIMESTAMP=>"datetime(CURRENT_TIMESTAMP, 'localtime')".freeze, :CURRENT_TIME=>"time(CURRENT_TIMESTAMP, 'localtime')".freeze}
       EXTRACT_MAP = {:year=>"'%Y'", :month=>"'%m'", :day=>"'%d'", :hour=>"'%H'", :minute=>"'%M'", :second=>"'%f'"}
+      NOT_SPACE = Dataset::NOT_SPACE
+      COMMA = Dataset::COMMA
+      PAREN_CLOSE = Dataset::PAREN_CLOSE
+      AS = Dataset::AS
+      APOS = Dataset::APOS
+      EXTRACT_OPEN = "CAST(strftime(".freeze
+      EXRACT_CLOSE = ') AS '.freeze
+      NUMERIC = 'NUMERIC'.freeze
+      INTEGER = 'INTEGER'.freeze
+      BACKTICK = '`'.freeze
+      BLOB_START = "X'".freeze
+      HSTAR = "H*".freeze
 
       # SQLite does not support pattern matching via regular expressions.
       # SQLite is case insensitive (depending on pragma), so use LIKE for
       # ILIKE.
-      def complex_expression_sql(op, args)
+      def complex_expression_sql_append(sql, op, args)
         case op
         when :~, :'!~', :'~*', :'!~*'
           raise Error, "SQLite does not support pattern matching via regular expressions"
         when :ILIKE
-          super(:LIKE, args.map{|a| SQL::Function.new(:upper, a)})
+          super(sql, :LIKE, args.map{|a| SQL::Function.new(:upper, a)})
         when :"NOT LIKE", :"NOT ILIKE"
-          "NOT #{complex_expression_sql((op == :"NOT ILIKE" ? :ILIKE : :LIKE), args)}"
+          sql << NOT_SPACE
+          complex_expression_sql_append(sql, (op == :"NOT ILIKE" ? :ILIKE : :LIKE), args)
         when :^
-          complex_expression_arg_pairs(args) do |a, b|
+          sql << complex_expression_arg_pairs(args) do |a, b|
             a = literal(a)
             b = literal(b)
             "((~(#{a} & #{b})) & (#{a} | #{b}))"
@@ -421,16 +433,21 @@ module Sequel
         when :extract
           part = args.at(0)
           raise(Sequel::Error, "unsupported extract argument: #{part.inspect}") unless format = EXTRACT_MAP[part]
-          expr = args.at(1)
-          "CAST(strftime(#{format}, #{literal(expr)}) AS #{part == :second ? 'NUMERIC' : 'INTEGER'})"
+          sql << EXTRACT_OPEN << format << COMMA
+          literal_append(sql, args.at(1))
+          sql << EXRACT_CLOSE << (part == :second ? NUMERIC : INTEGER) << PAREN_CLOSE
         else
-          super(op, args)
+          super
         end
       end
       
       # MSSQL doesn't support the SQL standard CURRENT_DATE or CURRENT_TIME
-      def constant_sql(constant)
-        CONSTANT_MAP[constant] || super
+      def constant_sql_append(sql, constant)
+        if c = CONSTANT_MAP[constant]
+          sql << c
+        else
+          super
+        end
       end
       
       # SQLite performs a TRUNCATE style DELETE if no filter is specified.
@@ -454,8 +471,8 @@ module Sequel
       end
       
       # SQLite uses the nonstandard ` (backtick) for quoting identifiers.
-      def quoted_identifier(c)
-        "`#{c}`"
+      def quoted_identifier_append(sql, c)
+        sql << BACKTICK << c.to_s << BACKTICK
       end
       
       # When a qualified column is selected on SQLite and the qualifier
@@ -500,9 +517,10 @@ module Sequel
       private
       
       # SQLite uses string literals instead of identifiers in AS clauses.
-      def as_sql(expression, aliaz)
+      def as_sql_append(sql, aliaz)
         aliaz = aliaz.value if aliaz.is_a?(SQL::Identifier)
-        "#{expression} AS #{literal(aliaz.to_s)}"
+        sql << AS
+        literal_append(sql, aliaz.to_s)
       end
 
       # If col is a qualified column, alias it to the same as the column name
@@ -524,14 +542,12 @@ module Sequel
       
       # SQL fragment specifying a list of identifiers
       def identifier_list(columns)
-        columns.map{|i| quote_identifier(i)}.join(COMMA_SEPARATOR)
+        columns.map{|i| quote_identifier(i)}.join(COMMA)
       end
     
       # SQLite uses a preceding X for hex escaping strings
-      def literal_blob(v)
-        blob = ''
-        v.each_byte{|x| blob << sprintf('%02x', x)}
-        "X'#{blob}'"
+      def literal_blob_append(sql, v)
+        sql << BLOB_START << v.unpack(HSTAR).first << APOS
       end
 
       # SQLite does not support the SQL WITH clause

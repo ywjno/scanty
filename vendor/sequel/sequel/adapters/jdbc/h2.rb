@@ -104,26 +104,32 @@ module Sequel
       
       # Dataset class for H2 datasets accessed via JDBC.
       class Dataset < JDBC::Dataset
-        SELECT_CLAUSE_METHODS = clause_methods(:select, %w'distinct columns from join where group having compounds order limit')
+        SELECT_CLAUSE_METHODS = clause_methods(:select, %w'select distinct columns from join where group having compounds order limit')
         BITWISE_METHOD_MAP = {:& =>:BITAND, :| => :BITOR, :^ => :BITXOR}
+        APOS = Dataset::APOS
+        HSTAR = "H*".freeze
+        BITCOMP_OPEN = "((0 - ".freeze
+        BITCOMP_CLOSE = ") - 1)".freeze
+        ILIKE_PLACEHOLDER = "CAST(? AS VARCHAR_IGNORECASE)".freeze
+        TIME_FORMAT = "'%H:%M:%S'".freeze
         
         # Emulate the case insensitive LIKE operator and the bitwise operators.
-        def complex_expression_sql(op, args)
+        def complex_expression_sql_append(sql, op, args)
           case op
-          when :ILIKE
-            super(:LIKE, [SQL::PlaceholderLiteralString.new("CAST(? AS VARCHAR_IGNORECASE)", [args.at(0)]), args.at(1)])
-          when :"NOT ILIKE"
-            super(:"NOT LIKE", [SQL::PlaceholderLiteralString.new("CAST(? AS VARCHAR_IGNORECASE)", [args.at(0)]), args.at(1)])
+          when :ILIKE, :"NOT ILIKE"
+            super(sql, (op == :ILIKE ? :LIKE : :"NOT LIKE"), [SQL::PlaceholderLiteralString.new(ILIKE_PLACEHOLDER, [args.at(0)]), args.at(1)])
           when :&, :|, :^
-            complex_expression_arg_pairs(args){|a, b| literal(SQL::Function.new(BITWISE_METHOD_MAP[op], a, b))}
+            sql << complex_expression_arg_pairs(args){|a, b| literal(SQL::Function.new(BITWISE_METHOD_MAP[op], a, b))}
           when :<<
-            complex_expression_arg_pairs(args){|a, b| "(#{literal(a)} * POWER(2, #{literal(b)}))"}
+            sql << complex_expression_arg_pairs(args){|a, b| "(#{literal(a)} * POWER(2, #{literal(b)}))"}
           when :>>
-            complex_expression_arg_pairs(args){|a, b| "(#{literal(a)} / POWER(2, #{literal(b)}))"}
+            sql << complex_expression_arg_pairs(args){|a, b| "(#{literal(a)} / POWER(2, #{literal(b)}))"}
           when :'B~'
-            "((0 - #{literal(args.at(0))}) - 1)"
+            sql << BITCOMP_OPEN
+            literal_append(sql, args.at(0))
+            sql << BITCOMP_CLOSE
           else
-            super(op, args)
+            super
           end
         end
         
@@ -148,25 +154,32 @@ module Sequel
         end 
 
         private
+
+        #JAVA_H2_CLOB = Java::OrgH2Jdbc::JdbcClob
+
+        class ::Sequel::JDBC::Dataset::TYPE_TRANSLATOR
+          def h2_clob(v) Sequel::SQL::Blob.new(v.getSubString(1, v.length)) end
+        end
+
+        H2_CLOB_METHOD = TYPE_TRANSLATOR_INSTANCE.method(:h2_clob)
       
         # Handle H2 specific clobs as strings.
-        def convert_type(v)
-          case v
-          when Java::OrgH2Jdbc::JdbcClob
-            convert_type(v.getSubString(1, v.length))
+        def convert_type_proc(v)
+          if v.is_a?(Java::OrgH2Jdbc::JdbcClob)
+            H2_CLOB_METHOD
           else
-            super(v)
+            super
           end
         end
         
         # H2 expects hexadecimal strings for blob values
-        def literal_blob(v)
-          literal_string v.unpack("H*").first
+        def literal_blob_append(sql, v)
+          sql << APOS << v.unpack(HSTAR).first << APOS
         end
         
         # H2 handles fractional seconds in timestamps, but not in times
         def literal_sqltime(v)
-          v.strftime("'%H:%M:%S'")
+          v.strftime(TIME_FORMAT)
         end
 
         def select_clause_methods

@@ -718,6 +718,10 @@ module Sequel
         # :eager_loader_key :: A symbol for the key column to use to populate the key hash
         #                      for the eager loader.
         # :extend :: A module or array of modules to extend the dataset with.
+        # :graph_alias_base :: The base name to use for the table alias when eager graphing.  Defaults to the name
+        #                      of the association.  If the alias name has already been used in the query, Sequel will create
+        #                      a unique alias by appending a numeric suffix (e.g. alias_0, alias_1, ...) until the alias is
+        #                      unique.
         # :graph_block :: The block to pass to join_table when eagerly loading
         #                 the association via +eager_graph+.
         # :graph_conditions :: The additional conditions to use on the SQL join when eagerly loading
@@ -822,6 +826,7 @@ module Sequel
           opts[:graph_join_type] ||= :left_outer
           opts[:order_eager_graph] = true unless opts.include?(:order_eager_graph)
           conds = opts[:conditions]
+          opts[:graph_alias_base] ||= name
           opts[:graph_conditions] = conds if !opts.include?(:graph_conditions) and Sequel.condition_specifier?(conds)
           opts[:graph_conditions] = opts.fetch(:graph_conditions, []).to_a
           opts[:graph_select] = Array(opts[:graph_select]) if opts[:graph_select]
@@ -1618,7 +1623,7 @@ module Sequel
         # association and the values of the foreign/primary keys of +y+.  For most association
         # types, this is a simple transformation, but for +many_to_many+ associations this 
         # creates a subquery to the join table.
-        def complex_expression_sql(op, args)
+        def complex_expression_sql_append(sql, op, args)
           r = args.at(1)
           if (((op == :'=' || op == :'!=') and r.is_a?(Sequel::Model)) ||
               (multiple = ((op == :IN || op == :'NOT IN') and ((is_ds = r.is_a?(Sequel::Dataset)) or r.all?{|x| x.is_a?(Sequel::Model)}))))
@@ -1646,7 +1651,7 @@ module Sequel
               end
 
               if exp = association_filter_expression(op, ar, r)
-                literal(exp)
+                literal_append(sql, exp)
               else
                 raise Sequel::Error, "invalid association type #{ar[:type].inspect} for association #{l.inspect} used in dataset filter for model #{model.inspect}"
               end
@@ -1725,8 +1730,10 @@ module Sequel
         # Like +eager+, you need to call +all+ on the dataset for the eager loading to work.  If you just
         # call +each+, it will yield plain hashes, each containing all columns from all the tables.
         def eager_graph(*associations)
-          ds = if @opts[:eager_graph]
-            self
+          ds = if eg = @opts[:eager_graph]
+            eg = eg.dup
+            [:requirements, :reflections, :reciprocals].each{|k| eg[k] = eg[k].dup}
+            clone(:eager_graph=>eg)
           else
             # Each of the following have a symbol key for the table alias, with the following values: 
             # :reciprocals - the reciprocal instance variable to use for this association
@@ -1761,7 +1768,7 @@ module Sequel
         # *associations :: any associations dependent on this one
         def eager_graph_association(ds, model, ta, requirements, r, *associations)
           assoc_name = r[:name]
-          assoc_table_alias = ds.unused_table_alias(assoc_name)
+          assoc_table_alias = ds.unused_table_alias(r[:graph_alias_base])
           loader = r[:eager_grapher]
           if !associations.empty?
             if associations.first.respond_to?(:call)

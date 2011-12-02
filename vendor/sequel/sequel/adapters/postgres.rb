@@ -218,14 +218,27 @@ module Sequel
       # client encoding for the connection.
       def connect(server)
         opts = server_opts(server)
-        conn = Adapter.connect(
-          (opts[:host] unless blank_object?(opts[:host])),
-          opts[:port] || 5432,
-          nil, '',
-          opts[:database],
-          opts[:user],
-          opts[:password]
-        )
+        conn = if SEQUEL_POSTGRES_USES_PG
+          connection_params = {
+            :host => opts[:host],
+            :port => opts[:port] || 5432,
+            :tty => '',
+            :dbname => opts[:database],
+            :user => opts[:user],
+            :password => opts[:password],
+            :connect_timeout => opts[:connect_timeout] || 20
+          }.delete_if { |key, value| blank_object?(value) }
+          Adapter.connect(connection_params)
+        else
+          Adapter.connect(
+            (opts[:host] unless blank_object?(opts[:host])),
+            opts[:port] || 5432,
+            nil, '',
+            opts[:database],
+            opts[:user],
+            opts[:password]
+          )
+        end
         if encoding = opts[:encoding] || opts[:charset]
           if conn.respond_to?(:set_client_encoding)
             conn.set_client_encoding(encoding)
@@ -639,13 +652,13 @@ module Sequel
       end
       
       # Use the driver's escape_bytea
-      def literal_blob(v)
-        db.synchronize{|c| "'#{c.escape_bytea(v)}'"}
+      def literal_blob_append(sql, v)
+        sql << "'" << db.synchronize{|c| c.escape_bytea(v)} << "'"
       end
       
       # Use the driver's escape_string
-      def literal_string(v)
-        db.synchronize{|c| "'#{c.escape_string(v)}'"}
+      def literal_string_append(sql, v)
+        sql << "'" << db.synchronize{|c| c.escape_string(v)} << "'"
       end
       
       # For each row in the result set, yield a hash with column name symbol

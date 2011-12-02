@@ -145,14 +145,24 @@ module Sequel
           v2
         end
       when Array
-        y, mo, d, h, mi, s = v
+        y, mo, d, h, mi, s, ns, off = v
         if datetime_class == DateTime
-          convert_input_datetime_no_offset(DateTime.civil(y, mo, d, h, mi, s, 0), input_timezone)
+          s += (defined?(Rational) ? Rational(ns, 1000000000) : ns/1000000000.0) if ns
+          if off
+            DateTime.civil(y, mo, d, h, mi, s, off)
+          else
+            convert_input_datetime_no_offset(DateTime.civil(y, mo, d, h, mi, s), input_timezone)
+          end
         else
-          Time.send(input_timezone == :utc ? :utc : :local, y, mo, d, h, mi, s)
+          Time.send(input_timezone == :utc ? :utc : :local, y, mo, d, h, mi, s, (ns ? ns / 1000.0 : 0))
         end
       when Hash
-        convert_input_timestamp([:year, :month, :day, :hour, :minute, :second].map{|x| (v[x] || v[x.to_s]).to_i}, input_timezone)
+        ary = [:year, :month, :day, :hour, :minute, :second, :nanos].map{|x| (v[x] || v[x.to_s]).to_i}
+        if (offset = (v[:offset] || v['offset']))
+          ary << offset
+        end
+        convert_input_timestamp(ary, input_timezone)
+        convert_input_timestamp(ary, input_timezone)
       when Time
         if datetime_class == DateTime
           v.respond_to?(:to_datetime) ? v.to_datetime : string_to_datetime(v.iso8601)

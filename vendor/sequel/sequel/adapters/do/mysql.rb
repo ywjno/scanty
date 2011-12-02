@@ -26,6 +26,9 @@ module Sequel
       # Dataset class for MySQL datasets accessed via DataObjects.
       class Dataset < DataObjects::Dataset
         include Sequel::MySQL::DatasetMethods
+        APOS = Dataset::APOS
+        APOS_RE = Dataset::APOS_RE
+        DOUBLE_APOS = Dataset::DOUBLE_APOS
         
         # Use execute_insert to execute the replace_sql.
         def replace(*args)
@@ -35,8 +38,8 @@ module Sequel
         private
         
         # do_mysql sets NO_BACKSLASH_ESCAPES, so use standard SQL string escaping
-        def literal_string(s)
-          "'#{s.gsub("'", "''")}'"
+        def literal_string_append(sql, s)
+          sql << APOS << s.gsub(APOS_RE, DOUBLE_APOS) << APOS
         end
       end
     end
