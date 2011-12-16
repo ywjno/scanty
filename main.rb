@@ -53,7 +53,8 @@ helpers do
 	end
 
 	def paginate(post, options={})
-		html = ""
+		return "" if post.page_count == 1
+		html = '<div class="paginate">'
 		url = ""
 		url = "/tags/#{options[:tag]}" if options[:tag]
 		if post.prev_page
@@ -62,7 +63,7 @@ helpers do
 		if post.next_page
 			html += "<p class=\"pull-right\"><a href=\"#{url}/page/#{post.next_page}\">Next&nbsp;&rarr;</a></p>"
 		end
-		html
+		html += "</div>"
 	end
 end
 
@@ -97,7 +98,7 @@ end
 get '/tags/:tag' do
 	tag = params[:tag]
 	posts = Post.filter(:delete_status => 1).filter(:tags.like("%#{tag}%")).reverse_order(:created_at).paginate(1, Blog.page_size)
-	erb :tagged, :locals => { :posts => posts, :tag => tag }, :layout => false
+	erb :tagged, :locals => { :posts => posts, :tag => tag }, :layout => :layout
 end
 
 get '/page/:page' do
@@ -110,7 +111,7 @@ get '/tags/:tag/page/:page' do
 	tag = params[:tag]
 	posts = Post.filter(:delete_status => 1).filter(:tags.like("%#{tag}%")).reverse_order(:created_at).paginate(params[:page].to_i, Blog.page_size)
 	redirect '/' if posts.page_count < params[:page].to_i
-	erb :tagged, :locals => { :posts => posts, :tag => tag }, :layout => false
+	erb :tagged, :locals => { :posts => posts, :tag => tag }, :layout => :layout
 end
 
 ["/rss", "/feed"].each do |path|

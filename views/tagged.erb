@@ -1,90 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <title><%= Blog.title %></title>
-    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
-    <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link href="/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link href="/customize.css" rel="stylesheet" type="text/css" />
-    <link href="/feed" rel="alternate" title="Primary Feed" type="application/atom+xml" />
-  </head>
-  <body>
-    <div class="topbar">
-      <div class="fill">
-        <div class="container">
-          <ul class="nav">
-            <li class="active"><a href="/">Blog</a></li>
-          </ul>
-          <% if admin? %>
-            <p class="pull-right">
-              <a href="/posts/new">New post</a>&nbsp;|&nbsp;<a href="/logout">Log out</a>
-            </p>
-          <% else %>
-            <p class="pull-right"><a href="/auth">Log in</a></p>
+<div class="page-header">
+    <h1>Posts tagged <span class="tagged"><%= tag %></span></h1>
+</div>
+<div class="row">
+  <div class="span10">
+    <% posts.each do |post| %>
+      <div class="post">
+        <div class="post-header">
+          <h2 class="post-title">
+            <a href="<%= post.url %>"><%= post[:title] %></a>
+          </h2>
+          <p class="post-meta">
+            <%= post.created_at.strftime("%Y-%m-%d %H:%M:%S") %>&nbsp;|&nbsp;<small>Posted in</small> <%= post.linked_tags %>
+            <% if Blog.disqus_shortname %>
+             &nbsp;|&nbsp;<a href="<%= post.url %>#disqus_thread">comments</a>
+            <% end %>
+          </p>
+        </div>
+        <div class="post-content">
+          <%= post.summary_html %>
+          <% if post.more? %>
+            <a href="<%= post.url %>">Continue reading &raquo;</a>
           <% end %>
         </div>
       </div>
-    </div>
-    <div class="container">
-      <div class="content">
-        <div class="row">
-          <div class="span10">
-            <h1>Posts tagged <%= tag %></h1>
-            <% posts.each do |post| %>
-              <div class="post">
-                <div class="post-header">
-                  <h2 class="post-title">
-                    <a href="<%= post.url %>"><%= post[:title] %></a>
-                  </h2>
-                  <p class="post-meta">
-                    <%= post.created_at.strftime("%Y-%m-%d %H:%M:%S") %>&nbsp;|&nbsp;<small>Posted in</small> <%= post.linked_tags %>
-                    <% if Blog.disqus_shortname %>
-                     &nbsp;|&nbsp;<a href="<%= post.url %>#disqus_thread">comments</a>
-                    <% end %>
-                  </p>
-                </div>
-                <div class="post-content">
-                  <%= post.summary_html %>
-                  <% if post.more? %>
-                    <a href="<%= post.url %>">Continue reading &raquo;</a>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-            <% if Blog.disqus_shortname %>
-              <script type="text/javascript">
-                //<[CDATA[
-                (function() {
-                  var links = document.getElementsByTagName('a');
-                  var query = '?';
-                  for(var i = 0; i < links.length; i++) {
-                    if(links[i].href.indexOf('#disqus_thread') >= 0) {
-                      query += 'url' + i + '=' + encodeURIComponent(links[i].href) + '&';
-                    }
-                  }
-                  document.write('<script type="text/javascript" src="http://disqus.com/forums/<%= Blog.disqus_shortname %>/get_num_replies.js' + query + '"></' + 'script>');
-                })();
-                //]]>
-              </script>
-            <% end %>
-            <div class="paginate">
-              <%= paginate(posts, :tag => tag) %>
-            </div>
-          </div>
-          <div class="span4">
-            <div class="well">
-              <a href="/archive">Archive</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <footer>
-        <p>Content by <%= Blog.author %>&nbsp;|&nbsp;Design adapted from <a href="http://twitter.github.com/bootstrap/">Bootstrap</a></p>
-      </footer>
-    </div>
-  </body>
-</html>
+    <% end %>
+    <%= paginate(posts, :tag => tag) %>
+  </div>
+</div>
