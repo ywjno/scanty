@@ -16,7 +16,7 @@ class Post < Sequel::Model
 	end
 
 	def content_html
-		to_html(content)
+		to_html(content.to_s)
 	end
 
 	def summary
@@ -62,7 +62,7 @@ class Post < Sequel::Model
 			posts = Post.filter(:delete_status => 1).reverse_order(:created_at)
 		end
 		posts.each do |post|
-			dates[post.created_at.strftime("%Y/%m")] = post.created_at.strftime("%Y-%m")
+			dates[post.created_at.strftime("%Y/%m")] = post.created_at.strftime("%Y-%m") unless dates[post.created_at.strftime("%Y/%m")]
 		end
 		dates
 	end

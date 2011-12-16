@@ -122,12 +122,18 @@ end
 end
 
 get %r{^/(?<year>\d{4})/(?<month>\d{2})/?$} do
-	posts = nil
+	all_posts = nil
 	if admin?
-		posts = Post.filter(:created_at.like("#{params[:year]}-#{params[:month]}%")).reverse_order(:created_at)
+		all_posts = Post.reverse_order(:created_at)
 	else
-		posts = Post.filter(:delete_status => 1).filter(:created_at.like("#{params[:year]}-#{params[:month]}%")).reverse_order(:created_at)
+		all_posts = Post.filter(:delete_status => 1).reverse_order(:created_at)
 	end
+
+	posts = []
+	all_posts.each do |post|
+		posts << post if post.created_at.strftime("%Y") == params[:year] and post.created_at.strftime("%m") == params[:month]
+	end
+
 	erb :archive, :locals => { :posts => posts }, :layout => :layout
 end
 
