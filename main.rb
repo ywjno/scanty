@@ -8,16 +8,6 @@ require 'sequel'
 configure do
 	DB = Sequel.connect(ENV['DATABASE_URL'] || 'sqlite://blog.db')
 
-	DB.create_table? :posts do
-		primary_key :id
-		text :title, :null=>false
-		text :content, :null=>false
-		text :slug, :null=>false
-		text :tags, :null=>false
-		timestamp :created_at, :null=>false
-		Integer :delete_status, :null=>false, :default=> 1
-	end
-
 	require 'ostruct'
 	Blog = OpenStruct.new(
 		:title => 'a scanty blog',

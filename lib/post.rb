@@ -1,10 +1,24 @@
-require File.dirname(__FILE__) + '/../vendor/maruku/maruku'
-
-$LOAD_PATH.unshift File.dirname(__FILE__) + '/../vendor/syntax'
+$:.unshift File.dirname(__FILE__) + '/../maruku/maruku'
+require 'maruku'
+$:.unshift File.dirname(__FILE__) + '/../vendor/syntax'
 require 'syntax/convertors/html'
 
 class Post < Sequel::Model
 	Sequel.extension :pagination
+	plugin :schema
+
+	unless table_exists?
+		set_schema do
+			primary_key :id
+			text :title, :null=>false
+			text :content, :null=>false
+			text :slug, :null=>false
+			text :tags, :null=>false
+			timestamp :created_at, :null=>false
+			Integer :delete_status, :null=>false, :default=> 1
+		end
+		create_table
+	end
 
 	def url
 		d = created_at
