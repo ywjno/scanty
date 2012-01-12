@@ -1,4 +1,4 @@
-$:.unshift File.dirname(__FILE__) + '/../maruku/maruku'
+$:.unshift File.dirname(__FILE__) + '/../vendor/maruku'
 require 'maruku'
 $:.unshift File.dirname(__FILE__) + '/../vendor/syntax'
 require 'syntax/convertors/html'
