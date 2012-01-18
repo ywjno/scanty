@@ -161,7 +161,8 @@ post '/posts' do
 						:tags => params[:tags],
 						:content => params[:content],
 						:created_at => Time.now.utc.getlocal(Blog.timezone),
-						:slug => Post.make_slug(params[:title])
+						:slug => Post.make_slug(params[:title]),
+						:format => params[:format]
 		post.save
 	end
 	redirect post.url
@@ -181,13 +182,20 @@ post %r{^/\d{4}/\d{2}/\d{2}/(?<slug>[a-zA-Z0-9%\-]+)/$} do
 	DB.transaction do
 		post = Post.filter(:slug => URI.escape(params[:slug])).first
 		halt [ 404, "Page not found" ] unless post
-		post.title = params[:title]
-		post.tags = params[:tags]
-		post.content = params[:content]
+		unless params[:delete_status]
+			post.title = params[:title]
+			post.tags = params[:tags]
+			post.content = params[:content]
+			post.slug = Post.make_slug(params[:title]) if params[:change_slug]
+			post.format = params[:format]
+		end
 		post.delete_status = delete_status
-		post.slug = Post.make_slug(params[:title]) if params[:change_slug]
 		post.save
+
+		if params[:delete_status]
+			redirect '/'
+		else
+			redirect post.url
+		end
 	end
-	redirect '/' if params[:delete_status]
-	redirect post.url
 end

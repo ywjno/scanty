@@ -31,6 +31,16 @@
         <% end %>
       </div>
     </div>
+    <div class="clearfix">
+      <label for="format">Format</label>
+      <div class="input">
+        <select name="format" class="medium">
+          <option <% if !post.format || post.format == "txt" %>selected="selected"<% end %> value="txt">Plain Text</option>
+          <option <% if post.format == "markdown" %>selected="selected"<% end %> value="markdown">Markdown</option>
+          <option <% if post.format == "textile" %>selected="selected"<% end %> value="textile">Textile</option>
+        </select>
+      </div>
+    </div>
     <% if post.created_at %>
     <div class="clearfix error">
       <label for="delete_status"><strong>Delete?</strong></label>

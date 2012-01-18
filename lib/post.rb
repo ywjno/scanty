@@ -1,9 +1,10 @@
-$:.unshift File.dirname(__FILE__) + '/../vendor/maruku'
-require 'maruku'
-$:.unshift File.dirname(__FILE__) + '/../vendor/syntax'
-require 'syntax/convertors/html'
+require 'rdiscount'
+require 'redcloth'
 
 class Post < Sequel::Model
+	include Rack::Utils
+	alias_method :h, :escape_html
+
 	Sequel.extension :pagination
 	plugin :schema
 
@@ -16,6 +17,7 @@ class Post < Sequel::Model
 			text :tags, :null=>false
 			timestamp :created_at, :null=>false
 			Integer :delete_status, :null=>false, :default=> 1
+			text :format, :null=>false, :default=> "txt"
 		end
 		create_table
 	end
@@ -29,7 +31,7 @@ class Post < Sequel::Model
 	end
 
 	def content_html
-		to_html(content.to_s)
+		to_html(content.to_s, format)
 	end
 
 	def summary
@@ -38,7 +40,7 @@ class Post < Sequel::Model
 	end
 
 	def summary_html
-		to_html(summary.to_s)
+		to_html(summary.to_s, format)
 	end
 
 	def more?
@@ -86,41 +88,40 @@ class Post < Sequel::Model
 
 	########
 
-	def to_html(markdown)
-		out = []
-		noncode = []
-		code_block = nil
-		markdown.split("\n").each do |line|
-			if !code_block and line.strip.downcase == '<code>'
-				out << Maruku.new(noncode.join("\n")).to_html
-				noncode = []
-				code_block = []
-			elsif code_block and line.strip.downcase == '</code>'
-				convertor = Syntax::Convertors::HTML.for_syntax "ruby"
-				highlighted = convertor.convert(code_block.join("\n"))
-				out << "<code>#{highlighted}</code>"
-				code_block = nil
-			elsif code_block
-				code_block << line
+	def to_html(content, format = 'txt')
+		return case format
+			when 'markdown'
+				RDiscount.new(content).to_html
+			when 'textile'
+				RedCloth.new(content).to_html
 			else
-				noncode << line
+				split_content(content)
 			end
-		end
-		out << Maruku.new(noncode.join("\n")).to_html
-		out.join("\n")
 	end
 
 	def split_content(string)
-		parts = string.gsub(/\r/, '').split("\n\n")
-		show = []
-		hide = []
-		parts.each do |part|
-			if show.join.length < 100
-				show << part
+		show_html = ""
+		p_content = []
+		lines = string.split("\n")
+		lines.each_with_index do |line, index|
+			new_line = h(line.strip)
+			if index != lines.length - 1
+				unless new_line.empty?
+					p_content << new_line
+				else
+					show_html += "<p>#{p_content.join('<br />')}</p>"
+					p_content = []
+				end
 			else
-				hide << part
+				if p_content.length != 0
+					p_content << new_line
+					show_html += "<p>#{p_content.join("<br />")}</p>"
+				else
+					show_html += "<p>#{new_line}</p>"
+				end
 			end
 		end
-		[ to_html(show.join("\n\n")), hide.size > 0 ]
+		show_html
 	end
+
 end
