@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'sinatra'
 require 'digest/sha1'
+require 'sequel'
 
 configure do
 	DB = Sequel.connect(ENV['DATABASE_URL'] || 'sqlite://blog.db')
