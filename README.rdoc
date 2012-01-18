@@ -3,7 +3,7 @@
 == Overview
 
 Scanty is blogging software.  Software for my blog, to be exact:
-http://adam.blog.heroku.com
+http://funblog.heroku.com
 
 It is not a blogging engine, but it's small and easy to modify, so it could be
 the starting point for your blog, too.
@@ -12,8 +12,8 @@ the starting point for your blog, too.
 
 * Posts (shock!)
 * Tags
-* Markdown (via Maruku)
-* Ruby code syntax highlighting (via Syntax)
+* Markdown (via Discount)
+* Textile (via RedCloth)
 * Atom feed
 * Comments via Disqus
 * Web framework = Sinatra
@@ -21,9 +21,7 @@ the starting point for your blog, too.
 
 == Dependencies
 
-  $ gem install sinatra
-
-Sequel, Maruku, and Syntax are all vendored.
+  $ bundle install
 
 == Setup
 
@@ -78,6 +76,7 @@ edit the CSS or the code as you see fit.
 Written by Adam Wiggins
 
 Patches contributed by: Christopher Swenson, S. Brent Faulkner, and Stephen Eley
+Patches contributed by: Thomas Yang
 
 Released under the MIT License: http://www.opensource.org/licenses/mit-license.php
 
