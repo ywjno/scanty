@@ -2,9 +2,6 @@ require 'rubygems'
 require 'sinatra'
 require 'digest/sha1'
 
-$LOAD_PATH.unshift File.dirname(__FILE__) + '/vendor/sequel'
-require 'sequel'
-
 configure do
 	DB = Sequel.connect(ENV['DATABASE_URL'] || 'sqlite://blog.db')
 
