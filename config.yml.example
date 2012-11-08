@@ -8,3 +8,5 @@ admin_cookie_value: 51d6d976913ace58
 disqus_shortname:
 page_size: 10
 timezone: +08:00
+
+server: puma
