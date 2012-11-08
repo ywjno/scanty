@@ -2,25 +2,31 @@
 
 require 'rubygems'
 require 'sinatra/base'
-require 'digest/sha1'
+require 'sinatra/contrib'
 require 'sequel'
+require 'bundler/setup'
+require 'digest/sha1'
 
 class Main < Sinatra::Base
+  register Sinatra::Contrib
+
+  config_file "#{settings.root}/config.yml"
+
   configure do
     DB = Sequel.connect(ENV['DATABASE_URL'] || 'sqlite://blog.db')
 
     require 'ostruct'
     Blog = OpenStruct.new(
-      :title => 'a scanty blog',
-      :subtitle => 'Scanty, a really small blog',
-      :author => 'John Doe',
-      :url_base => 'http://localhost:4567/',
-      :admin_password => Digest::SHA1.hexdigest('changeme'),
-      :admin_cookie_key => 'scanty_admin',
-      :admin_cookie_value => Digest::SHA1.hexdigest('51d6d976913ace58'),
-      :disqus_shortname => nil,
-      :page_size => 10,
-      :timezone => '+08:00'
+      :title => settings.title,
+      :subtitle => settings.subtitle,
+      :author => settings.author,
+      :url_base => settings.url_base,
+      :admin_password => Digest::SHA1.hexdigest(settings.admin_password),
+      :admin_cookie_key => settings.admin_cookie_key,
+      :admin_cookie_value => Digest::SHA1.hexdigest(settings.admin_cookie_value),
+      :disqus_shortname => settings.disqus_shortname ||= nil,
+      :page_size => settings.page_size.to_i,
+      :timezone => settings.timezone
     )
   end
 
