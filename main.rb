@@ -4,7 +4,7 @@ require 'rubygems'
 require 'sinatra/base'
 require 'sinatra/contrib'
 require 'sequel'
-require 'bundler/setup'
+require 'builder'
 require 'digest/sha1'
 
 class Main < Sinatra::Base
@@ -30,6 +30,10 @@ class Main < Sinatra::Base
     )
   end
 
+  configure :development do
+    register Sinatra::Reloader
+  end
+
   error do
     e = request.env['sinatra.error']
     puts e.to_s
@@ -37,7 +41,7 @@ class Main < Sinatra::Base
     "Application error"
   end
 
-  $LOAD_PATH.unshift(File.dirname(__FILE__) + '/lib')
+  $LOAD_PATH.unshift("#{settings.root}/lib")
   require 'post'
 
   helpers do
@@ -111,12 +115,10 @@ class Main < Sinatra::Base
     erb :tagged, :locals => { :posts => posts, :tag => tag }, :layout => :layout
   end
 
-  ["/rss", "/feed"].each do |path|
-    get path do
-      @posts = Post.filter(:delete_status => 1).reverse_order(:created_at).limit(20)
-      content_type 'application/atom+xml', :charset => 'utf-8'
-      builder :feed
-    end
+  get %r{/(?:rss|feed)(?:.xml)?} do
+    @posts = Post.filter(:delete_status => 1).reverse_order(:created_at).limit(20)
+    content_type 'application/atom+xml', :charset => 'utf-8'
+    builder :feed
   end
 
   get %r{^/(?<year>\d{4})/(?<month>\d{2})/?$} do

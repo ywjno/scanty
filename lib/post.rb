@@ -28,8 +28,8 @@ class Post < Sequel::Model
     "/#{created_at.strftime('%Y/%m/%d')}/#{slug}/"
   end
 
-  def full_url
-    Blog.url_base.gsub(/\/$/, '') + url
+  def full_url(url_base)
+    url_base.gsub(/\/$/, '') + url
   end
 
   def content_html
