@@ -1,63 +1,44 @@
 <form action="<%= url %>" method="post" name="edit">
   <fieldset>
-    <div class="clearfix">
-      <label for="title"><strong>Title</strong></label>
-      <div class="input">
-        <input type="text" id="title" name="title" value="<%= post.title %>" placeholder="title" class="span5" />
-        <% if post.created_at %>
-        <ul class="inputs-list change_slug">
-          <li>
-            <label>
-              <input type="checkbox" id="change_slug" name="change_slug" value="true">
-              <span class="help-inline">If you want to change this blog's url to some to title,just check it.</span>
-            </label>
-          </li>
-        </ul>
-        <% end %>
-      </div>
-    </div>
-    <div class="clearfix">
-      <label for="tags"><strong>Tags</strong></label>
-      <div class="input">
-        <input type="text" id="tags" name="tags" value="<%= post.tags %>" placeholder="Tags" class="span3" />
-      </div>
-    </div>
-    <div class="clearfix">
-      <label for="content"><strong>Content</strong></label>
-      <div class="input">
-        <textarea class="xxlarge" id="content" name="content" rows="18" placeholder="Content"><%= post.content %></textarea>
-        <% if post.created_at %>
-          <span class="help-block">Created at:&nbsp;<%= post.created_at %></span>
-        <% end %>
-      </div>
-    </div>
-    <div class="clearfix">
-      <label for="format">Format</label>
-      <div class="input">
-        <select name="format" class="medium">
-          <option <% if !post.format || post.format == "txt" %>selected="selected"<% end %> value="txt">Plain Text</option>
-          <option <% if post.format == "markdown" %>selected="selected"<% end %> value="markdown">Markdown</option>
-          <option <% if post.format == "textile" %>selected="selected"<% end %> value="textile">Textile</option>
-        </select>
-      </div>
-    </div>
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" value="<%= post.title %>" placeholder="title" class="span5" />
     <% if post.created_at %>
-    <div class="clearfix error">
-      <label for="delete_status"><strong>Delete?</strong></label>
-      <div class="input">
-        <ul class="inputs-list">
-          <li>
-            <label>
-              <input type="checkbox" id="delete_status" name="delete_status" value="true" <% if post.delete? %> checked="checked" <% end %>>
-              <span class="help-inline">If you want to DELETE this blog,just check it.</span>
-            </label>
-          </li>
-        </ul>
+    <div class="control-group warning">
+      <div class="controls">
+        <label class="checkbox warning">
+          <input type="checkbox" id="change_slug" name="change_slug" value="true">
+          <span class="help-inline">If you want to change this blog's url to some to title,just check it.</span>
+        </label>
       </div>
     </div>
     <% end %>
-    <div class="actions">
-      <input type="submit" class="btn primary" value="Save">&nbsp;
+    <label for="tags">Tags</label>
+    <input type="text" id="tags" name="tags" value="<%= post.tags %>" placeholder="Tags" class="span3" />
+    <span class="help-block">Split by space.</span>
+    <label for="content">Content</label>
+    <textarea class="input-block-level" id="content" name="content" rows="18" placeholder="Content"><%= post.content %></textarea>
+    <% if post.created_at %>
+    <span class="help-block">Created at:&nbsp;<%= post.created_at %></span>
+    <% end %>
+    <label for="format">Format</label>
+    <select name="format">
+      <option <% if !post.format || post.format == "txt" %>selected="selected"<% end %> value="txt">Plain Text</option>
+      <option <% if post.format == "markdown" %>selected="selected"<% end %> value="markdown">Markdown</option>
+      <option <% if post.format == "textile" %>selected="selected"<% end %> value="textile">Textile</option>
+    </select>
+    <% if post.created_at %>
+      <label><strong>Delete?</strong></label>
+      <div class="control-group error">
+        <div class="controls">
+          <label class="checkbox inputError">
+            <input type="checkbox" id="change_slug" name="change_slug" value="true">
+            <span class="help-inline">If you want to change this blog's url to some to title,just check it.</span>
+          </label>
+        </div>
+      </div>
+    <% end %>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save</button>
       <% if post.created_at %>
         <a href="<%= post.url %>" class="btn">Back</a>
       <% else %>
