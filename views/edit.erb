@@ -3,9 +3,9 @@
     <label for="title">Title</label>
     <input type="text" id="title" name="title" value="<%= post.title %>" placeholder="title" class="span5" />
     <% if post.created_at %>
-    <div class="control-group warning">
+    <div class="control-group error">
       <div class="controls">
-        <label class="checkbox warning">
+        <label class="checkbox inline">
           <input type="checkbox" id="change_slug" name="change_slug" value="true">
           <span class="help-inline">If you want to change this blog's url to some to title,just check it.</span>
         </label>
@@ -30,8 +30,8 @@
       <label><strong>Delete?</strong></label>
       <div class="control-group error">
         <div class="controls">
-          <label class="checkbox inputError">
-            <input type="checkbox" id="change_slug" name="change_slug" value="true">
+          <label class="checkbox inline">
+            <input type="checkbox" id="delete_status" name="delete_status" value="true" <% if post.delete? %> checked="checked" <% end %>>
             <span class="help-inline">If you want to change this blog's url to some to title,just check it.</span>
           </label>
         </div>

@@ -11,7 +11,7 @@
     <%= post.content_html %>
   </div>
   <% if admin? %>
-    <div class="edit"><a href="<%= post.url %>edit">edit</a></div>
+    <div class="post-edit"><a class="btn" href="<%= post.url %>edit">Edit</a></div>
   <% end %>
 </div>
 

@@ -1,11 +1,11 @@
 <h1>Archive</h1>
-<table>
+<table class="table table-bordered">
   <% posts.each do |post| %>
-    <tr>
+    <tr <% if post.delete? %> class="error" <% end %>>
       <td><a href="<%= post.url %>"><%= post.title %></a></td>
       <td><%= post.created_at.strftime("%Y-%m-%d %H:%M") %></td>
       <% if post.delete? %>
-        <td><span class="deleted-msg">This Blog is deleted.</span></td>
+        <td>This Blog is deleted.</td>
       <% else %>
         <td>&nbsp;</td>
       <% end %>

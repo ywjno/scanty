@@ -40,7 +40,7 @@
       <div class="row-fluid">
         <div class="span12">
           <div class="page-header">
-            <h2><%= Blog.title %><p><small><%= Blog.subtitle %></small></p></h2>
+            <h2><%= Blog.title %></h2><p><%= Blog.subtitle %></p>
           </div>
           <div class="row-fluid">
             <div class="span9 content">
@@ -77,10 +77,10 @@
         </div>
       </div>
       <hr />
+    </div>
+    <div id="footer">
       <div class="container">
-        <footer>
-          <p>Content by <%= Blog.author %>&nbsp;|&nbsp;Design adapted from <a href="http://twitter.github.com/bootstrap/">Bootstrap</a></p>
-        </footer>
+        <p class="muted credit">Content by <%= Blog.author %>&nbsp;|&nbsp;Design adapted from <a href="http://twitter.github.com/bootstrap/">Bootstrap</a></p>
       </div>
     </div>
   </body>
