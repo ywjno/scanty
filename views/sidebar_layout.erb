@@ -13,29 +13,7 @@
     <link href="/feed" rel="alternate" title="Primary Feed" type="application/atom+xml" />
   </head>
   <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container-fluid">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-          <a class="brand" href="/">Blog</a>
-          <div class="nav-collapse collapse">
-            <p class="navbar-text pull-right">
-            <% if admin? %>
-              <p class="pull-right">
-                <a href="/posts/new">New post</a>&nbsp;|&nbsp;<a href="/logout">Log out</a>
-              </p>
-            <% else %>
-              <p class="pull-right"><a href="/auth">Log in</a></p>
-            <% end %>
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <%= erb :"partial/navbar" %>
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span12">
@@ -45,23 +23,8 @@
           <div class="row-fluid">
             <div class="span9 content">
               <%= yield %>
-            <% if Blog.disqus_shortname %>
-              <script type="text/javascript">
-                //<[CDATA[
-                (function() {
-                  var links = document.getElementsByTagName('a');
-                  var query = '?';
-                  for(var i = 0; i < links.length; i++) {
-                    if(links[i].href.indexOf('#disqus_thread') >= 0) {
-                      query += 'url' + i + '=' + encodeURIComponent(links[i].href) + '&';
-                    }
-                  }
-                  document.write('<script type="text/javascript" src="http://disqus.com/forums/<%= Blog.disqus_shortname %>/get_num_replies.js' + query + '"></' + 'script>');
-                })();
-                //]]>
-              </script>
-            <% end %>
-            <%= paginate(posts) %>
+              <%= erb :"partial/disqus_num_replies" %>
+              <%= paginate(posts) %>
             </div>
             <div class="span3">
               <div class="well">
@@ -78,10 +41,6 @@
       </div>
       <hr />
     </div>
-    <div id="footer">
-      <div class="container">
-        <p class="muted credit">Content by <%= Blog.author %>&nbsp;|&nbsp;Design adapted from <a href="http://twitter.github.com/bootstrap/">Bootstrap</a></p>
-      </div>
-    </div>
+    <%= erb :"partial/footer" %>
   </body>
 </html>
