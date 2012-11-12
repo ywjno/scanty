@@ -5,7 +5,7 @@ body{padding-top:60px;font-size:14px}
 .post{margin:0 0 1.625em;padding:0 0 1.625em;border-bottom:1px solid #DDD}
 .post-header{padding-left:5px;border-left:3px solid #DDD}
 .post-content p{margin:12px 0 0 15px}
-.post-edit{margin-top:25px}
+.post-edit, .post-more{margin-top:25px}
 .tagged{color:#0069d6}
 #footer{height:60px}
 @media(max-width:767px){#footer{margin-left:-20px;margin-right:-20px;padding-left:20px;padding-right:20px}

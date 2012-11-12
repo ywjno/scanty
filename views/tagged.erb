@@ -18,10 +18,12 @@
         </div>
         <div class="post-content">
           <%= post.summary_html %>
-          <% if post.more? %>
-            <a href="<%= post.url %>">Continue reading &raquo;</a>
-          <% end %>
         </div>
+        <% if post.more? %>
+          <div class="post-more">
+            <a href="<%= post.url %>">Continue reading &raquo;</a>
+          </div>
+        <% end %>
       </div>
     <% end %>
     <%= paginate(posts, :tag => tag) %>

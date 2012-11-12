@@ -14,7 +14,7 @@
     <% end %>
     <label for="tags">Tags</label>
     <input type="text" id="tags" name="tags" value="<%= post.tags %>" placeholder="Tags" class="span3" />
-    <span class="help-block">Split by space.</span>
+    <span class="text-info">Split by space</span>
     <label for="content">Content</label>
     <textarea class="input-block-level" id="content" name="content" rows="18" placeholder="Content"><%= post.content %></textarea>
     <% if post.created_at %>
