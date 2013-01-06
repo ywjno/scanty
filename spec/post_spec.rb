@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require File.dirname(__FILE__) + '/base'
 
 describe Post do
@@ -21,7 +23,7 @@ describe Post do
   it "produces html from the markdown body" do
     @post.content = "* Bullet"
     @post.format = "markdown"
-    @post.content_html.should == "<ul>\n  <li>Bullet</li>\n</ul>\n"
+    @post.content_html.should == "<ul>\n<li>Bullet</li>\n</ul>\n\n"
   end
 
   it "makes the tags into links to the tag search" do

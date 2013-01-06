@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-require 'kramdown'
+require 'rdiscount'
 require 'redcloth'
 
 class Post < Sequel::Model
@@ -98,7 +98,7 @@ class Post < Sequel::Model
   def to_html(content, format = 'txt')
     return case format
       when 'markdown'
-        Kramdown::Document.new(content).to_html
+        RDiscount.new(content).to_html
       when 'textile'
         RedCloth.new(content).to_html
       else
