@@ -166,12 +166,12 @@ class Main < Sinatra::Base
     auth
     post = nil
     DB.transaction do
-      post = Post.new :title => params[:title],
+      post = Post.new(
+              :title => params[:title],
               :tags => params[:tags],
               :content => params[:content],
-              :created_at => Time.now.utc.getlocal(Blog.timezone),
-              :slug => Post.make_slug(params[:title]),
-              :format => params[:format]
+              :format => params[:format],
+              :created_at => Time.now.utc.getlocal(Blog.timezone))
       post.save
     end
     redirect post.url
@@ -199,7 +199,7 @@ class Main < Sinatra::Base
         post.format = params[:format]
       end
       post.delete_status = delete_status
-      post.save
+      post.update
 
       if params[:delete_status]
         redirect '/'

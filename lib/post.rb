@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-require 'rdiscount'
+require 'kramdown'
 require 'redcloth'
 
 class Post < Sequel::Model
@@ -22,6 +22,11 @@ class Post < Sequel::Model
       text :format, :null=>false, :default=> "txt"
     end
     create_table
+  end
+
+  def before_save
+    super
+    self.slug = make_slug
   end
 
   def url
@@ -56,13 +61,13 @@ class Post < Sequel::Model
     end.join(" ")
   end
 
-  def self.make_slug(title)
+  def make_slug
     slug = URI.escape(title.downcase.gsub(/[ _]/, '-')).gsub(/[^a-zA-Z0-9%\-]/, '').squeeze('-')
     unless Post.filter(:slug => slug).first
-      slug
+      return slug
     else
       count = Post.filter(:slug.like("#{slug}-%")).count + 1
-      "#{slug}-#{(count + 1)}"
+      return "#{slug}-#{(count + 1)}"
     end
   end
 
@@ -88,12 +93,12 @@ class Post < Sequel::Model
     created_at.strftime("%Y-%m-%d %H:%M:%S")
   end
 
-  ########
+  private
 
   def to_html(content, format = 'txt')
     return case format
       when 'markdown'
-        RDiscount.new(content).to_html
+        Kramdown::Document.new(content).to_html
       when 'textile'
         RedCloth.new(content).to_html
       else
